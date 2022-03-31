@@ -1,0 +1,85 @@
+---
+title: "Generalized Linear Models (GLMs)"
+output: 
+  pdf_document:
+    number_sections: TRUE
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\tableofcontents
+\clearpage
+
+```{r}
+library(COUNT)
+library(ISLR)
+library(lmtest)
+library(ROCR)
+
+```
+
+# Logistic Regression 
+
+```{r}
+## fitting the logistic regression model
+data("titanic")
+titanic_glm = glm(survived ~ class + age + sex, family = binomial, data = titanic)
+summary(titanic_glm)
+
+# coefficients and exp(coef) denoting odds ratios
+coef(titanic_glm)
+exp(coef(titanic_glm))
+
+# confidenc interval for exp(coefficients)
+confint(titanic_glm)
+
+```
+
+```{r}
+# plotting the model
+par(mfrow = c(2,2))
+plot(titanic_glm)
+
+# make predictions
+new_person = data.frame(class = "1st class", age = "child", sex = "man")
+predict(titanic_glm, newdata = new_person, type = "link")
+
+# ROC curve
+par(mfrow = c(1,1))
+titanic_pHat = predict(titanic_glm, type = 'response')
+titanic_prediction = prediction(titanic_pHat, titanic$survived)
+titanic_performance = performance(titanic_prediction,
+measure = "tpr",
+x.measure = "fpr")
+plot(titanic_performance, colorize = TRUE)
+
+# AUC
+performance(titanic_prediction, "auc")@y.values
+
+```
+
+# Possion Regression
+
+```{r}
+
+data("fishing")
+fish_dat = fishing
+fish_glm = glm(totabund ~ meandepth + density + period, 
+               family = poisson, data = fish_dat)
+summary(fish_glm)
+
+par(mfrow = c(2,2))
+plot(fish_glm, 1:4)
+
+```
+
+# References
+
+<https://www.datacamp.com/community/tutorials/generalized-linear-models>
+
+Gareth James, Daniela Witten, Trevor Hastie Robert Tibshirani (2013), An Introduction to Statistical Learning with Applications in R.
+
+

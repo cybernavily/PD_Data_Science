@@ -1,0 +1,213 @@
+---
+title: "Linear Regression Models"
+output: 
+  pdf_document:
+    number_sections: TRUE
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\tableofcontents
+\clearpage
+
+# Simple Linear Regression Model
+
+```{r}
+# fitting a simple linear regression model
+fit <- lm(weight~height,data = women)
+
+# get the summary output of the model
+summary(fit) 
+
+# the fitted values
+fitted(fit)
+fit$fitted.values
+
+# the residuals
+residuals(fit)
+fit$residuals
+
+# the fitted regression line on the scatterplot
+plot(weight ~ height , data = women)
+abline(fit, col = "red", lwd = 2)
+
+# residuals analysis plots
+par(mfrow = c(2,2))
+plot(fit, 1:4)
+
+# make predictions
+predict(fit, newdata = data.frame(height = 66), interval = "prediction", level = 0.95)
+
+predict(fit, newdata = data.frame(height = 66), interval = "confidence", level = 0.95)
+
+```
+
+
+# Polynomial Regression Models
+
+```{r}
+# the predictors contain some polynomial terms
+fit2 <- lm(weight ~ height + I(height^2), data = women)
+summary(fit2)
+
+# fitted curves on the scatterplot
+plot(weight ~ height , data = women)
+lines(women$height, fitted(fit2), col = "red", lwd = 2)
+
+# residual analysis
+par(mfrow = c(2,2))
+plot(fit2, 1:4)
+
+# test if the quadratic term of height is effective
+anova(fit, fit2)
+# since the p values is significant, the quadratic term of height is effective.
+```
+
+# Multiple Linear Regression Models
+
+```{r, message = FALSE, warning = FALSE}
+# The data provided in R
+library("dplyr")
+state.x77 <- as.data.frame(state.x77)
+glimpse(state.x77)
+
+# select some variables to form a new dataset named states
+states <- state.x77 %>%
+   select(Murder, Population, Illiteracy, Income, Frost)
+```
+
+## Exploratory Data Analysis (EDA)
+```{r, warning = FALSE, message = FALSE}
+## EDA
+# obtain the correlation of variables of interest
+cor(states)
+# scatterplot matrix
+library(car)
+scatterplotMatrix(states,spread = FALSE, smoother.args = list(lty = 2),
+                  main ="Scatterplots Mattrix")
+```
+
+## Model Fitting
+```{r}
+# fit a multiple linear regression model
+fit <- lm(Murder ~ Population + Illiteracy + Income + Frost,data=states)
+# or
+# fit <- lm(Murder ~ .,data=states)
+summary(fit)
+
+```
+
+## Model Diagnostics
+
+```{r}
+# model diagnostics
+par(mfrow = c(2,2))
+plot(fit, 1:4)
+
+# check the assumption of normality of residuals
+par(mfrow = c(1,1))
+qqnorm(residuals(fit))
+qqline(residuals(fit), col = "red")
+# shapiro Wilk test for normality
+shapiro.test(residuals(fit)) 
+
+# check the assumption of independence of residuals
+durbinWatsonTest(fit)
+
+# check the assumption of linearity
+library(car)
+crPlots(fit)
+
+# check the constant variance of residuals
+library(car)
+ncvTest(fit)
+
+# Test if the multi-collinearity exists
+library(car)
+vif(fit)
+
+# Detecting outliers
+library(car)
+outlierTest(fit)
+
+
+# find high-leverage points
+hat.plot <- function(fit){
+     p <- length(coefficients(fit))
+     n <- length(fitted(fit))
+     plot(hatvalues(fit), main="Index Plot of Hat Values")
+     abline(h=c(2,3)*p/n, col="red", lty=2)
+     identify(1:n, hatvalues(fit), names(hatvalues(fit)))
+}
+hat.plot(fit)
+
+# find influential points
+cutoff <- 4/(nrow(states)-length(fit$coefficients)-2)
+plot(fit,which = 4, cook.levels = cutoff)
+abline(h = cutoff, lty = 2, col="blue")
+
+```
+
+## Model Selection
+
+
+```{r, warning = FALSE, message = FALSE}
+#  stepwise regression 
+library(MASS)
+stepAIC(fit, direction="backward")
+stepAIC(fit, direction="forward")
+stepAIC(fit, direction="both")
+
+```
+
+```{r}
+# best subset regression model
+library(leaps)
+leaps_mod <- regsubsets(Murder ~ Population + Illiteracy + Income + Frost,
+                        data=states, nbest=4)
+plot(leaps_mod, scale="adjr2")
+
+plot(leaps_mod, scale="Cp")
+```
+
+# Regression Models with Interaction Terms
+
+```{r}
+fit1 <- lm(Murder ~ Population + Illiteracy + Income + Frost + Population:Income,
+          data=states)
+summary(fit1)
+
+anova(fit, fit1)
+# showing the interaction not work
+
+```
+
+# Robust Regression Models
+
+```{r}
+library("MASS")
+fit3 <- rlm(Murder ~ Population + Illiteracy + Income + Frost,data=states)
+summary(fit3)
+
+par(mfrow = c(2,2))
+plot(fit3, 1:4)
+```
+
+# References
+
+<https://www.datacamp.com/community/tutorials/linear-regression-R>
+
+MH Kutner, CJ Nachtsheim, J Neter, W Li (2005), Applied linear statistical models.
+
+Gareth James, Daniela Witten, Trevor Hastie Robert Tibshirani (2013), An Introduction to Statistical Learning with Applications in R.
+
+<https://rpubs.com/bryangoodrich/>
+
+
+<https://www.scribbr.com/statistics/linear-regression-in-r/>
+
+<https://stats.oarc.ucla.edu/r/dae/robust-regression/>
+

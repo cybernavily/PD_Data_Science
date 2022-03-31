@@ -1,0 +1,96 @@
+---
+title: "LASSO Regression and Ridge Regression"
+output: 
+  pdf_document:
+    number_sections: TRUE
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\tableofcontents
+\clearpage
+
+*Data Source: House Prices <https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data>*
+
+
+```{r}
+train <- read.csv("train_cleaned.csv", header = TRUE)
+test <- read.csv("test_cleaned.csv", header = TRUE)
+```
+
+# Ridge Regression
+
+```{r,warning = FALSE, message =FALSE}
+
+library(glmnet)
+set.seed(123)
+train.x <- train[,names(train) != "SalePrice"]
+x <- data.matrix(train.x)
+y <- log(train$SalePrice)
+lambdas <- 10^seq(2, -3, by = -.1)
+
+## Fit a ridge regression model
+fit.ridge <- glmnet(x,y,alpha = 0,family = 'gaussian',lambda = lambdas)
+## plot the CV error versus regularization parameters lambdas
+cv.ridge <- cv.glmnet(x, y, alpha = 0, nfold = 20, lambda = lambdas)
+plot(cv.ridge)
+
+cv.ridge
+
+# Print the coefficients best model
+coef(fit.ridge,s=cv.ridge$lambda.min)
+
+## Make prediction
+pred.ridge <- as.vector(predict(
+fit.ridge,
+s = cv.ridge$lambda.min,
+newx = data.matrix(test)
+))
+
+
+
+```
+
+**Comment:**  Through the cross-validation, we select the optimal $\lambda$ for the ridge regression. The minimal MSE of 20-fold cross-validation is 02297, and the corresponding $\lambda$ is 0.1. Therefore, the best $\lambda$ is 0.1. 
+
+
+# LASSO Regression
+
+
+```{r}
+
+## Fit a Lasso model
+fit.lasso <- cv.glmnet(x, y, alpha = 1)
+cv.lasso <- cv.glmnet(x, y, alpha = 1, nfolds = 20)
+
+## Visualize model
+plot(cv.lasso)
+
+cv.lasso
+
+# the coefficients of the bes model with the lowest CV error
+coef(fit.lasso, s= cv.lasso$lambda.min)
+
+## Make prediction
+pred.lasso <- as.vector(predict(
+fit.lasso,
+s = cv.lasso$lambda.min,
+newx = data.matrix(test)
+))
+
+
+```
+
+**Comment:**  Through the cross-validation, we select the optimal $\lambda$ for the Lasso regression. The minimal MSE of 20-fold cross-validation is 0.02365, and the corresponding $\lambda$ is  0.005443. Therefore, the best $\lambda$ is 0.02355. We find the coefficients of many predictor variables are shinkaged to zero, which achieves a subset selection effect.
+
+
+
+# References
+
+
+Gareth James, Daniela Witten, Trevor Hastie Robert Tibshirani (2013), An Introduction to Statistical Learning with Applications in R.
+
+<https://www.pluralsight.com/guides/linear-lasso-and-ridge-regression-with-r>

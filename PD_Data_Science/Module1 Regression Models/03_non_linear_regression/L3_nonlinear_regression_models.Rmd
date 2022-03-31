@@ -1,0 +1,87 @@
+---
+title: "Nonlinear Regression Models"
+output: 
+  pdf_document:
+    number_sections: TRUE
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\tableofcontents
+\clearpage
+
+
+# Non-linear Regression: nls()
+
+
+```{r}
+deer <- read.table("jaws.txt", header = TRUE)
+head(deer)
+```
+
+```{r}
+# first model
+model1 <- nls(bone~a-b*exp(-c*age),start=list(a=120,b=110,c=0.064), data = deer)
+summary(model1)
+
+plot(bone ~ age, data = deer)
+lines(deer$age, fitted(model1), col = "red", lwd = 2)
+```
+
+```{r}
+# second model
+model2 <- nls(bone~a*(1-exp(-c*age)),start=list(a=120,c=0.064), data = deer)
+summary(model2)
+
+plot(bone ~ age, data = deer)
+lines(deer$age, fitted(model2), col = "red", lwd = 2)
+
+```
+
+```{r}
+# comparing two models
+anova(model1, model2)
+
+```
+
+# Generalized Additive Model
+
+*Data Source: House Prices <https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data>*
+
+```{r, message = FALSE, warning = FALSE}
+# importing the dataset
+train <- read.csv("train_cleaned.csv", header = TRUE)
+
+library(splines)
+library(gam)
+fit.gam <- gam( log(SalePrice) ~ 
+                  s(MSSubClass , df = 5) + s(LotArea , df = 5) + 
+                  s(OverallQual , df = 5) + s(OverallCond , df = 5) + 
+                  s(YearBuilt , df = 5) + s(YearRemodAdd , df = 3) + 
+                  s(MasVnrArea , df = 5) + s(BsmtFinSF1 , df = 5) + 
+                  s(BsmtFinSF2 , df = 5) + s(BsmtUnfSF , df = 5) + 
+                  s(X1stFlrSF , df = 5) + s(X2ndFlrSF , df = 5) + 
+                  s(BsmtFullBath , df = 1) + s(FullBath , df = 1) + 
+                  s(BedroomAbvGr , df = 5) + s(KitchenAbvGr , df = 4) + 
+                  s(TotRmsAbvGrd , df = 1) + s(Fireplaces , df = 2) + 
+                  s(GarageCars , df = 2) + s(GarageArea , df = 2) + 
+                  s(WoodDeckSF , df = 2) + s(ScreenPorch , df = 4) + 
+                  s(PoolArea , df = 5) + s(MoSold , df = 1), data = train
+)
+
+summary(fit.gam)
+```
+
+# References
+
+<https://data-flair.training/blogs/r-nonlinear-regression/>
+
+MH Kutner, CJ Nachtsheim, J Neter, W Li (2005), Applied linear statistical models.
+
+Gareth James, Daniela Witten, Trevor Hastie Robert Tibshirani (2013), An Introduction to Statistical Learning with Applications in R.
+
+
+
