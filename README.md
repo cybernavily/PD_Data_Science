@@ -29,3 +29,14 @@
 #### 1. K-means
 #### 2. Hierarchical Clustering
 #### 3. DBSCAN
+
+## Module 4 Data Visualization
+#### 1. Scatter Plots
+#### 2. Lines Plots
+#### 3. Facets
+#### 4. Barplots
+#### 5. Histograms
+#### 6. Boxplots
+#### 7. Dotted Plots
+#### 8. Heatmap
+#### 9. Violin Plots
