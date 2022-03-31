@@ -24,3 +24,8 @@
 #### 2. Logistic Regression Model
 #### 3. k-NN
 #### 4. Naive Bayes Classifier
+
+## Module 3 Clustering Methods
+#### 1. K-means
+#### 2. Hierarchical Clustering
+#### 3. DBSCAN
