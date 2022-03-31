@@ -1,2 +1,20 @@
-# data science
- STA303 PD
+# Professional Development Task: Data Science Repository
+## Module 1: Regression Models
+### Part 1: Linear Regression Models
+#### 1. Simple Linear Regression Model
+#### 2. Polynomial Regression Models
+#### 3. Multiple Linear Regression Models
+#### 4. Regression Models with Interaction Terms
+#### 5. Robust Regression Models
+
+### Part 2: LASSO Regression and Ridge Regression
+#### 1. Ridge Regression
+#### 2. LASSO Regression
+
+### Part 3 : Nonlinear Regression Models
+#### 1. Non-linear Regression: nls()
+#### 2. Generalized Additive Model
+
+### Part 4 : Generalized Linear Models (GLMs)
+#### 1. Logistic Regression
+#### 2. Possion Regression
