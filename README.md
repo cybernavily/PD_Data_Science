@@ -18,3 +18,9 @@
 ### Part 4 : Generalized Linear Models (GLMs)
 #### 1. Logistic Regression
 #### 2. Possion Regression
+
+## Module 2 Classification Methods
+#### 1. Linear Discriminant Analysis (LDA)
+#### 2. Logistic Regression Model
+#### 3. k-NN
+#### 4. Naive Bayes Classifier
