@@ -1,0 +1,333 @@
+---
+title: "Data Visualization"
+output: 
+  pdf_document:
+    number_sections: TRUE
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\tableofcontents
+\clearpage
+
+```{r, message = FALSE, warning = FALSE}
+library("ggplot2")
+library("gapminder")
+library("dplyr")
+glimpse(gapminder)
+
+```
+
+# Scatter Plots
+
+```{r}
+# basic scatterplots
+ggplot(data = gapminder,
+       mapping = aes(x = gdpPercap,y = lifeExp)) + geom_point()
+
+ggplot(gapminder,aes(x = gdpPercap,y = lifeExp)) + geom_point()
+
+
+# addding smoothing lines
+ggplot(gapminder,aes(x = gdpPercap,y = lifeExp)) + 
+  geom_point() +
+  geom_smooth()
+
+ggplot(gapminder,aes(x = log(gdpPercap),y = lifeExp)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+
+ggplot(gapminder,aes(x = log(gdpPercap),y = lifeExp)) + 
+  geom_point() +
+  geom_smooth(method="gam") +  #generalized addditive model
+  scale_x_log10()
+
+ggplot(gapminder,aes(x = log(gdpPercap),y = lifeExp)) + 
+  geom_point() +
+  geom_smooth(method="gam") +
+  scale_x_log10(labels=scales::dollar)
+
+# controlling colors, shapes, linestype, and transparency of  points
+ggplot(gapminder,aes(x = log(gdpPercap),y = lifeExp, color = continent)) + 
+  geom_point() 
+
+ggplot(gapminder,aes(x = log(gdpPercap),y = lifeExp, color = continent)) + 
+  geom_point() +
+  geom_smooth(method="loess") +
+  scale_x_log10(labels=scales::dollar)
+
+ggplot(gapminder,aes(x = log(gdpPercap),y = lifeExp, color = continent, fill = continent)) + 
+  geom_point() +
+  geom_smooth(method="loess") +
+  scale_x_log10(labels=scales::dollar)
+
+ggplot(gapminder,aes(x = log(gdpPercap),y = lifeExp)) + 
+  geom_point(alpha=0.5) +
+  geom_smooth(method="lm", color="yellow", se = FALSE, size = 2, alpha = 0.3, linetype = 4) +
+  scale_x_log10(labels=scales::dollar)
+
+
+ggplot(data = filter(gapminder, year == "2007"),
+       mapping = aes(
+         x = gdpPercap,
+         y = lifeExp,
+         shape = continent))+
+  geom_point(alpha = 0.4, size = 4) +
+  scale_x_log10(labels=scales::dollar)
+
+ggplot(data=gapminder,
+       mapping = aes(
+         x = gdpPercap,
+         y = lifeExp,
+         color = log(pop))) +
+  geom_point() + 
+  geom_smooth(method="loess") +
+  scale_x_log10(labels=scales::dollar)
+```
+
+
+# Lines Plots
+
+```{r}
+ggplot(data = gapminder,
+       mapping = aes(x = year, y = lifeExp)) +
+  geom_line()
+
+ggplot(data = gapminder,
+       mapping = aes(x = year, y = lifeExp, group = country)) +
+  geom_line()
+
+ggplot(data = filter(gapminder, country == "Rwanda"),
+       mapping = aes(x = year, y = lifeExp)) +
+  geom_line() +
+  geom_point()
+
+ggplot(data = filter(gapminder, country == "Rwanda"),
+       mapping = aes(x = year, y = lifeExp)) +
+  geom_line() +
+  geom_area(fill = "darkseagreen1", alpha = 0.5)
+
+ggplot(data = gapminder,
+       mapping = aes(x = year, y = lifeExp)) +
+  geom_line(aes(color = continent, linetype = continent))
+
+```
+
+# Facets
+
+```{r}
+ggplot(data = gapminder,
+       mapping = aes(
+         x = year,
+         y = lifeExp,
+         group = country)) + 
+  geom_line() + facet_wrap(~ continent)
+
+ggplot(data = gapminder,
+       mapping = aes(
+         x = year,
+         y = lifeExp)) + 
+geom_line(mapping = aes(group = country), color = "gray70") +
+  geom_smooth(method = "loess", color="red", se = FALSE, size = 1.1) +
+  facet_wrap(~ continent, ncol = 2) +
+  labs(
+    x = "Year",
+    y = "Life Expectancy",
+    title = " The trend of life expectancy of countries across 5 continents" )
+
+
+```
+
+```{r}
+library("NHANES")
+data(NHANES)
+head(NHANES)
+
+
+ggplot(data = NHANES,
+       mapping = aes(
+         x = Age,
+         y = BMI)) + 
+  geom_point() +
+  facet_grid(Gender~ SexOrientation)
+
+ggplot(data = NHANES,
+       mapping = aes(
+         x = Age,
+         y = BMI)) + 
+  geom_smooth() +
+  geom_point() +
+  facet_grid(Gender~ SexOrientation)
+
+
+```
+
+# Barplots
+
+```{r}
+
+ggplot(data = NHANES,
+       mapping = aes(x = Gender)) + 
+  geom_bar()
+
+ggplot(data = NHANES,
+       mapping = aes(x = SexOrientation, fill = Gender)) + 
+  geom_bar() 
+
+ggplot(data = NHANES,
+       mapping = aes(x = SexOrientation, fill = Gender)) + 
+  geom_bar(position = "dodge")  # stack
+
+ggplot(data = NHANES,
+       mapping = aes(x = SexOrientation, fill = Gender)) + 
+  geom_bar(position = "dodge")  + 
+  coord_flip() +
+  facet_grid(~ Gender) 
+
+ggplot(data = NHANES,
+       mapping = aes(x = SexOrientation, fill = Gender)) + 
+  geom_bar(position = "dodge")  +
+  facet_grid(AgeDecade~ Gender) 
+
+ggplot(data = NHANES,
+       mapping = aes(x = SexOrientation, fill = Gender)) + 
+  geom_bar(position = "dodge")  +
+  facet_grid(~ Gender) +
+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1) )
+
+# change the legends
+ggplot(data = NHANES,
+       mapping = aes(x = SexOrientation, fill = Gender)) + 
+  geom_bar(position = "dodge")  +
+  theme(legend.position = "top") # top left right 
+
+```
+
+
+# Histograms
+
+```{r}
+ggplot(data = NHANES,
+       mapping = aes(x = Age)) +
+  geom_histogram()  # bins = 20
+
+ggplot(data = NHANES,
+       mapping = aes(x = Age, fill = Gender)) +
+  geom_histogram(bins = 10) 
+
+ggplot(data = NHANES,
+       mapping = aes(x = Age)) + 
+  geom_density()
+
+ggplot(data = NHANES,
+       mapping = aes(x = Age, fill = Gender, color = Gender)) + 
+  geom_density(alpha = 0.3)
+
+ggplot(data = NHANES,
+       mapping = aes(x = Age, fill = SexOrientation, color = SexOrientation)) + 
+  geom_density(alpha = 0.3)
+
+# add the density curves
+ggplot(data = NHANES,
+       mapping = aes(x = Age, color = SexOrientation)) + 
+  geom_line(stat = "density")
+
+ggplot(data = NHANES,
+       mapping = aes(x = Age)) + 
+       geom_area(stat = "density", fill = "cadetblue1")
+
+ggplot(data = NHANES,
+       mapping = aes(x = Age)) + 
+geom_freqpoly(mapping = aes(color = Gender))
+
+ggplot(data = NHANES, mapping = aes(x = Age)) +
+  geom_histogram(mapping = aes(y = ..density..), alpha = 0.6) +
+  geom_density(size = 1.1, color = "red")
+
+```
+
+
+# Boxplots
+
+```{r}
+ggplot(data = NHANES,
+       mapping = aes(x = Gender, y = Age, fill = Gender)) + 
+  geom_boxplot()
+
+ggplot(data = NHANES,
+       mapping = aes(x = SexOrientation, y = Age, fill = SexOrientation)) + 
+  geom_boxplot() +
+  coord_flip()
+
+
+```
+
+
+# Dotted Plots
+
+```{r}
+ggplot(data = gapminder,
+       mapping = aes(
+         y = lifeExp,
+         x = continent)) +  
+  geom_point(alpha = 0.4) +
+  coord_flip() 
+
+ggplot(data = gapminder,
+       mapping = aes(
+         y = lifeExp,
+         x = continent)) +  
+  coord_flip() + 
+geom_jitter(alpha = 0.4, width = 0.2, height = 0) 
+
+```
+
+# Heatmap
+
+```{r}
+
+ gapminder %>%
+   select(continent, year, lifeExp) %>%
+   group_by(continent, year) %>%
+   summarise(lifeExp = median(lifeExp, na.rm=TRUE)) %>%
+   ungroup() -> d_gap2a
+ 
+ d_gap2a %>%
+   filter(year == 2007) %>%
+   arrange(desc(lifeExp)) -> d_gap2b
+ d_gap2a %>%
+   mutate(continent = factor(continent, levels = d_gap2b$continent)) -> d_gap2
+ 
+ ggplot(data = d_gap2, mapping = aes(
+   x = year, y = continent, fill = lifeExp)) + 
+ geom_tile() +
+   scale_fill_viridis_c()
+
+```
+
+# Violin Plots
+
+```{r}
+ 
+ ggplot(data = NHANES,
+        mapping = aes(x = Gender, y = Age, fill = Gender)) + 
+   geom_violin()
+ 
+ ggplot(data = NHANES,
+        mapping = aes(x = SexOrientation, y = Age, fill = SexOrientation)) + 
+   geom_violin()
+
+```
+
+
+# References
+
+Claus O. Wilke(2019). Fundamentals of Data Visualization. O¡¯Reilly Media. <https://serialmentor.com/dataviz/>
+
+Healy, Kieran (2018). Data Visualization: A Practical Introduction. Princeton University Press. <https://socviz.co/index.html>
+
+Winston Chang(2018). R Graphics Cookbook. O¡¯Relly Media. 
+<https://r-graphics.org/> 
