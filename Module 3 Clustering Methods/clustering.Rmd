@@ -1,0 +1,118 @@
+---
+title: "Clustering Methods"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    number_sections: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\tableofcontents
+\clearpage
+
+```{r, message = FALSE, warning = TRUE}
+
+library(dplyr)
+library(cluster)
+library(factoextra)
+library(gridExtra)
+
+# loading the data
+data('USArrests') 
+df <- na.omit(USArrests)  # remove observations with missing values
+df <- scale(df) # normalize the data before clustering
+head(df)
+```
+
+# K-means
+
+```{r}
+# different setting about the number of clusters K
+set.seed(1)
+kmeans2 <- kmeans(df, centers = 2) 
+kmeans3 <- kmeans(df, centers = 3) 
+kmeans4 <- kmeans(df, centers = 4)  
+kmeans5 <- kmeans(df, centers = 5)  
+
+# visualization
+plot1 <- fviz_cluster(kmeans2, geom = "point", data = df) + ggtitle("k = 2")
+plot2 <- fviz_cluster(kmeans3, geom = "point", data = df) + ggtitle("k = 3")
+plot3 <- fviz_cluster(kmeans4, geom = "point", data = df) + ggtitle("k = 4")
+plot4 <- fviz_cluster(kmeans5, geom = "point", data = df) + ggtitle("k = 5")
+grid.arrange(plot1, plot2, plot3, plot4, nrow = 2)
+
+```
+
+```{r}
+# enhanced k-means clustering
+res.km <- eclust(df, "kmeans")
+# Gap statistic plot
+fviz_gap_stat(res.km$gap_stat)
+# Silhouette plot
+fviz_silhouette(res.km)
+
+```
+
+# Hierarchical Clustering
+
+```{r}
+# distance matrix
+dist <- dist(df)
+# fitting hierarchical clustering model
+hc <- hclust(dist, method = "average")
+plot(hc, hang = -1, cex = 0.8)
+
+```
+
+```{r}
+# different  visualization methods
+fviz_dend(hc, k = 2, rect = TRUE, rect_fill =  TRUE, rect_border = c("#2E9FDF", "#00AF88"))
+
+fviz_dend(hc, k = 2, rect = TRUE, rect_fill =  TRUE, type = 'circular', rect_border = c("#2E9FDF", "#00AF88"))
+
+fviz_dend(hc, k = 2, rect = TRUE, rect_fill =  TRUE, type = 'phylogenic', rect_border = c("#2E9FDF", "#00AF88"))
+
+
+```
+
+
+```{r}
+# enhanced hierarchical clustering
+res.hc <- eclust(df, "hclust") 
+fviz_dend(res.hc, rect = TRUE) 
+fviz_cluster(res.hc) 
+
+```
+
+
+# DBSCAN
+
+```{r}
+data("multishapes")
+df1 <- multishapes[,1:2]
+
+library("dbscan")
+kNNdistplot(df1, k = 6)
+
+```
+
+```{r}
+library(fpc)
+db <- dbscan(df1, eps = 0.15, MinPts = 5)
+fviz_cluster(db, data = df1, stand = FALSE, frame = FALSE, geom = "point")
+
+```
+
+
+
+
+# References
+
+<https://data-flair.training/blogs/clustering-in-r-tutorial/>
+
+<https://blog.csdn.net/dege857/article/details/116697417>
+
+<https://zhuanlan.zhihu.com/p/30890984>
