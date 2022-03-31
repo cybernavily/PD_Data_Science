@@ -1,0 +1,163 @@
+---
+title: "4 Classfiers for Iris Data"
+output: 
+  pdf_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\tableofcontents
+\clearpage
+
+# Background
+
+The goal of this practice is to compare the k-NN classifier, linear discriminant analysis (LDA), Logistic Regression Model in a binary classification problem. 
+
+Here we considerFisher¡¯s iris data set. Extract the data corresponding to the flower types versicolor and virginica, numbering a total of 100 flowers. Set aside the first 15 observations for each flower type as test data and use the remaining data consisting of 75 observations (with flower types as class labels) as training data
+
+
+
+
+```{r, message = FALSE}
+# loading the data
+library("dplyr")
+data("iris")
+versicolor <- iris %>% filter(Species == "versicolor")
+virginica <- iris %>% filter(Species == "virginica")
+
+# testing data
+test_data <- rbind(versicolor[1:15,],virginica[1:15,])
+glimpse(test_data)
+
+# training data
+train_data <- rbind(versicolor[-(1:15),],virginica[-(1:15),])
+glimpse(train_data)
+
+# dropping unused factor levels `setosa` for the factor `Species`
+train_data$Species <- droplevels(train_data$Species)
+test_data$Species <- droplevels(test_data$Species)
+```
+
+
+
+# Linear Discriminant Analysis (LDA)
+
+
+```{r}
+
+library(MASS)
+lda.fit = lda(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, data = train_data)
+knitr::kable(lda.fit$means, 
+             caption = "The class-specific means of the predictor variables for the training data.")
+
+```
+
+
+
+The confusion matrix for the test data is summarized in the following table. The precision rate is $100\%$.
+
+```{r}
+lda.pred = predict(lda.fit, test_data)
+lda.conf = table(true = test_data$Species, predicted =lda.pred$class)
+knitr::kable(lda.conf, 
+             caption = "The confusion matrix for the test data using LDA")
+
+# precision rate
+sum(diag(lda.conf))/30
+```
+
+
+
+# Logistic Regression Model
+
+
+
+```{r, message = FALSE, warning = TRUE}
+glm = glm(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, 
+          family = binomial, data = iris)
+summary(glm)
+```
+
+
+
+The confusion matrix for the test data using the  logistic regression model is given in the following table. The misclassification error rate is 50%.
+
+```{r}
+
+# predicted probabilities
+glm.pred.prob = predict(glm, test_data, type = "response")
+# predicted labels
+glm.pred = ifelse(glm.pred.prob > 0.5, " virginica", "versicolor")
+
+# confusion matrix
+glm.conf = table(true = test_data$Species, predicted = glm.pred)
+knitr::kable(glm.conf, 
+             caption = "The confusion matrix for the test data")
+
+
+```
+
+
+
+
+
+
+# k-NN
+
+
+
+When $k=5$, the confusion matrix for the test data is summarized in the following table. The precision rate is 96.7%.
+
+```{r}
+library("class")
+## the kNN classifier with k = 5
+
+knn5 = knn(
+  train = train_data[,-5],
+  test = test_data[,-5],
+  cl = train_data$Species,
+  k = 5
+)
+# confusion matrix
+knn5.conf = table(true = test_data$Species, predicted = knn5)
+knitr::kable(knn5.conf, 
+             caption = "The confusion matrix for test data using kNN (k=5)")
+
+# precision
+sum(diag(knn5.conf))/30
+
+```
+
+# Naive Bayes Classifier
+
+The confusion matrix of Naive Bayes Classifier on the test data is summarized in the following table. The precision rate is 93.3%.
+
+```{r}
+# fit the model
+library(klaR)
+fit.bayes <- NaiveBayes(Species ~., data = train_data)
+# fit.bayes[1:length(fit.bayes)]
+par(mfrow = c(2,2))
+plot(fit.bayes)
+
+# predictions
+bayes.prediction <- predict(fit.bayes, test_data[,-5])$class
+
+# confusion matrix
+bayes.conf = table(true = test_data$Species, predicted = bayes.prediction)
+knitr::kable(bayes.conf, 
+             caption = "The confusion matrix for test data using Naive Bayes")
+
+# precision
+sum(diag(bayes.conf))/30
+
+```
+
+# References
+
+Gareth James, Daniela Witten, Trevor Hastie Robert Tibshirani (2013), An Introduction to Statistical Learning with Applications in R.
+
+
